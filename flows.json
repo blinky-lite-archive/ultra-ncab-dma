@@ -144,8 +144,8 @@
         "z": "a7b9d689.b8a5e8",
         "name": "Teensy",
         "serial": "373e7d51.903ea2",
-        "x": 110,
-        "y": 220,
+        "x": 70,
+        "y": 140,
         "wires": [
             [
                 "2af394dd.443cdc",
@@ -161,8 +161,8 @@
         "func": "var digAvg = 312.5; \nvar deltaDig = 287.5;\nvar npts = msg.payload.real.length;\nfor (ii = 0; ii < npts; ++ii)\n{\n    msg.payload.real[ii] = (msg.payload.real[ii] - digAvg) / deltaDig;\n    msg.payload.imag[ii] = (msg.payload.imag[ii] - digAvg) / deltaDig;\n}\n\ntransformRadix2(msg.payload.real,msg.payload.imag);\nfor (ii = 0; ii < npts; ++ii)\n{\n    msg.payload.real[ii] = msg.payload.real[ii] / npts;\n    msg.payload.imag[ii] = msg.payload.imag[ii] / npts;\n}\nreturn {'topic':'fft', 'payload':msg.payload};\n/* https://www.nayuki.io/res/free-small-fft-in-multiple-languages/fft.js\n * Computes the discrete Fourier transform (DFT) of the given complex vector, storing the result back into the vector.\n * The vector's length must be a power of 2. Uses the Cooley-Tukey decimation-in-time radix-2 algorithm.\n */\nfunction transformRadix2(real, imag) {\n\t// Length variables\n\tvar n = real.length;\n\tif (n != imag.length)\n\t\tthrow \"Mismatched lengths\";\n\tif (n == 1)  // Trivial transform\n\t\treturn;\n\tvar levels = -1;\n\tfor (var i = 0; i < 32; i++) {\n\t\tif (1 << i == n)\n\t\t\tlevels = i;  // Equal to log2(n)\n\t}\n\tif (levels == -1)\n\t\tthrow \"Length is not a power of 2\";\n\t\n\t// Trigonometric tables\n\tvar cosTable = new Array(n / 2);\n\tvar sinTable = new Array(n / 2);\n\tfor (var i = 0; i < n / 2; i++) {\n\t\tcosTable[i] = Math.cos(2 * Math.PI * i / n);\n\t\tsinTable[i] = Math.sin(2 * Math.PI * i / n);\n\t}\n\t\n\t// Bit-reversed addressing permutation\n\tfor (var i = 0; i < n; i++) {\n\t\tvar j = reverseBits(i, levels);\n\t\tif (j > i) {\n\t\t\tvar temp = real[i];\n\t\t\treal[i] = real[j];\n\t\t\treal[j] = temp;\n\t\t\ttemp = imag[i];\n\t\t\timag[i] = imag[j];\n\t\t\timag[j] = temp;\n\t\t}\n\t}\n\t\n\t// Cooley-Tukey decimation-in-time radix-2 FFT\n\tfor (var size = 2; size <= n; size *= 2) {\n\t\tvar halfsize = size / 2;\n\t\tvar tablestep = n / size;\n\t\tfor (var i = 0; i < n; i += size) {\n\t\t\tfor (var j = i, k = 0; j < i + halfsize; j++, k += tablestep) {\n\t\t\t\tvar l = j + halfsize;\n\t\t\t\tvar tpre =  real[l] * cosTable[k] + imag[l] * sinTable[k];\n\t\t\t\tvar tpim = -real[l] * sinTable[k] + imag[l] * cosTable[k];\n\t\t\t\treal[l] = real[j] - tpre;\n\t\t\t\timag[l] = imag[j] - tpim;\n\t\t\t\treal[j] += tpre;\n\t\t\t\timag[j] += tpim;\n\t\t\t}\n\t\t}\n\t}\n\t\n\t// Returns the integer whose value is the reverse of the lowest 'bits' bits of the integer 'x'.\n\tfunction reverseBits(x, bits) {\n\t\tvar y = 0;\n\t\tfor (var i = 0; i < bits; i++) {\n\t\t\ty = (y << 1) | (x & 1);\n\t\t\tx >>>= 1;\n\t\t}\n\t\treturn y;\n\t}\n}\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 770,
-        "y": 220,
+        "x": 650,
+        "y": 80,
         "wires": [
             [
                 "e51a09aa.2b7ae8"
@@ -175,8 +175,8 @@
         "z": "a7b9d689.b8a5e8",
         "name": "",
         "serial": "373e7d51.903ea2",
-        "x": 480,
-        "y": 320,
+        "x": 360,
+        "y": 180,
         "wires": []
     },
     {
@@ -191,12 +191,11 @@
         "crontab": "",
         "once": true,
         "onceDelay": "5",
-        "x": 310,
-        "y": 360,
+        "x": 230,
+        "y": 220,
         "wires": [
             [
-                "8bf276a.f678288",
-                "39db2d21.3c6d92"
+                "8bf276a.f678288"
             ]
         ]
     },
@@ -208,8 +207,8 @@
         "func": "msg.payload = 1;\nreturn msg;",
         "outputs": 1,
         "noerr": 0,
-        "x": 300,
-        "y": 320,
+        "x": 220,
+        "y": 180,
         "wires": [
             [
                 "8bf276a.f678288"
@@ -224,11 +223,10 @@
         "func": "var npts = msg.payload.length / 8;\nvar buf = new ArrayBuffer(4);\nvar view = new DataView(buf);\nvar real = [];\nvar imag = [];\nfor (var ipt = 0; ipt < npts; ++ipt)\n{\n    for (ib = 0; ib < 4; ++ib) view.setUint8(ib, msg.payload[ipt * 4 + 3 - ib]);\n    real[ipt] = view.getFloat32(0);\n    for (ib = 0; ib < 4; ++ib) view.setUint8(ib, msg.payload[(ipt + npts) * 4 + 3 - ib]);\n    imag[ipt] = view.getFloat32(0);\n}\nreturn {'topic':'timeData', 'payload':{'real':real,'imag':imag}};\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 320,
-        "y": 220,
+        "x": 260,
+        "y": 140,
         "wires": [
             [
-                "c52ddcf3.2bc24",
                 "e8d0cc13.f226"
             ]
         ]
@@ -238,58 +236,24 @@
         "type": "function",
         "z": "a7b9d689.b8a5e8",
         "name": "FFTMAG",
-        "func": "var npts = msg.payload.real.length\nvar npts2 = npts / 2;\nvar fftmag = [];\nvar mode = [];\nvar modeMin = 5;\nfor (var ii = 0; ii < npts2; ++ii)\n{\n    var fftMagPlus = 0.0;\n    var fftMagMinus = 0.0;\n    fftMagMinus = fftMagMinus + msg.payload.real[npts - 1 - ii] * msg.payload.real[npts - 1 - ii];\n    fftMagMinus = fftMagMinus + msg.payload.imag[npts - 1 - ii] * msg.payload.imag[npts - 1 - ii];\n    fftMagMinus = 1000.0 * Math.sqrt(fftMagMinus);\n    fftMagPlus = fftMagPlus + msg.payload.real[ii] * msg.payload.real[ii];\n    fftMagPlus = fftMagPlus + msg.payload.imag[ii] * msg.payload.imag[ii];\n    fftMagPlus = 1000.0 * Math.sqrt(fftMagPlus);\n    fftmag[ii] = (fftMagMinus + fftMagPlus) / 2;\n    mode[ii] = ii;\n}\nfor (var ii = 0; ii < modeMin; ++ii)\n{\n    fftmag[ii] = 0.0;\n}\n\nreturn {\n    topic:'archiver/blinky-lite/demo/chill-detector/01/mode/spectrum/reading',\n    payload:\n        {\n            type:\"vector\",\n            value: [mode,fftmag]\n        }\n}",
-        "outputs": 1,
+        "func": "var npts = msg.payload.real.length\nvar npts2 = npts / 2;\nvar fftmag = [];\nvar mode = [];\nvar modeMin = 5;\nfor (var ii = 0; ii < npts2; ++ii)\n{\n    var fftMagPlus = 0.0;\n    var fftMagMinus = 0.0;\n    fftMagMinus = fftMagMinus + msg.payload.real[npts - 1 - ii] * msg.payload.real[npts - 1 - ii];\n    fftMagMinus = fftMagMinus + msg.payload.imag[npts - 1 - ii] * msg.payload.imag[npts - 1 - ii];\n    fftMagMinus = 1000.0 * Math.sqrt(fftMagMinus);\n    fftMagPlus = fftMagPlus + msg.payload.real[ii] * msg.payload.real[ii];\n    fftMagPlus = fftMagPlus + msg.payload.imag[ii] * msg.payload.imag[ii];\n    fftMagPlus = 1000.0 * Math.sqrt(fftMagPlus);\n    fftmag[ii] = (fftMagMinus + fftMagPlus) / 2;\n    mode[ii] = ii;\n}\nvar initSettings = flow.get('initSettings');\nif (initSettings.modeMin < 1) initSettings.modeMin = 1;\nif (initSettings.modeMin >= npts2) initSettings.modeMin = npts2 - 1;\nif (initSettings.modeMax < 1) initSettings.modeMax = 1;\nif (initSettings.modeMax >= npts2) initSettings.modeMax = npts2 - 1;\nif (initSettings.modeMin >= initSettings.modeMax) initSettings.modeMin = initSettings.modeMax - 1;\nfor (var ii = 0; ii < initSettings.modeMin; ++ii)\n{\n    fftmag[ii] = 0.0;\n}\nfor (var ii = initSettings.modeMax; ii < npts2; ++ii)\n{\n    fftmag[ii] = 0.0;\n}\nvar maxAmp = 0.0;\nvar maxMode = -1;\nvar avgPower = 0.0;\nfor (var ii = initSettings.modeMin; ii <= initSettings.modeMax; ++ii)\n{\n    if (maxAmp < fftmag[ii])\n    {\n        maxAmp = fftmag[ii];\n        maxMode = ii;\n    }\n    avgPower = avgPower + fftmag[ii];\n}\n//avgPower = avgPower / (initSettings.modeMax - initSettings.modeMin + 1);\navgPower = Math.round(100.0 * avgPower) / 100;\nmaxAmp = Math.round(100.0 * maxAmp) / 100;\nvar archiveTopic = flow.get('archiverTopic');\nreturn [\n    {\n        topic: archiveTopic + 'mode/spectrum/reading',\n        payload:\n            {\n                type:\"vector\",\n                value: [mode,fftmag]\n            }\n    },\n    {\n        topic: archiveTopic + 'mode/maxAmp/reading',\n        payload:\n            {\n                type:\"scalar\",\n                value: maxAmp\n            }\n    },\n    {\n        topic: archiveTopic + 'mode/maxMode/reading',\n        payload:\n            {\n                type:\"scalar\",\n                value: maxMode\n            }\n    },\n    {\n        topic: archiveTopic + 'mode/avgPower/reading',\n        payload:\n            {\n                type:\"scalar\",\n                value: avgPower\n            }\n    }\n];",
+        "outputs": 4,
         "noerr": 0,
-        "x": 960,
-        "y": 220,
+        "x": 780,
+        "y": 80,
         "wires": [
             [
                 "a1e3e942.abc288"
+            ],
+            [
+                "a1e3e942.abc288"
+            ],
+            [
+                "a1e3e942.abc288"
+            ],
+            [
+                "a1e3e942.abc288"
             ]
-        ]
-    },
-    {
-        "id": "615467a4.754678",
-        "type": "debug",
-        "z": "a7b9d689.b8a5e8",
-        "name": "",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "true",
-        "x": 770,
-        "y": 280,
-        "wires": []
-    },
-    {
-        "id": "c52ddcf3.2bc24",
-        "type": "function",
-        "z": "a7b9d689.b8a5e8",
-        "name": "Get DC Values",
-        "func": "var npts = msg.payload.real.length;\nvar real = 0.0;\nvar imag = 0.0;\nfor (ii = 0; ii < npts; ++ii)\n{\n    real = real + msg.payload.real[ii];\n    imag = imag + msg.payload.imag[ii];\n}\nreal =  real / npts;\nimag =  imag / npts;\nreturn [{'topic':'real','payload':real},{'topic':'imag','payload':imag}];",
-        "outputs": 2,
-        "noerr": 0,
-        "x": 580,
-        "y": 280,
-        "wires": [
-            [],
-            []
-        ]
-    },
-    {
-        "id": "39db2d21.3c6d92",
-        "type": "function",
-        "z": "a7b9d689.b8a5e8",
-        "name": "blank chart",
-        "func": "msg.payload = [];\nreturn msg;",
-        "outputs": 1,
-        "noerr": 0,
-        "x": 490,
-        "y": 380,
-        "wires": [
-            []
         ]
     },
     {
@@ -300,8 +264,8 @@
         "func": "if (msg.topic != 'timeData')\n{\n    context.set(msg.topic, msg.payload);\n    context.set('bufferPointer', -1);\n    return null;\n}\nvar numOfBuffers = context.get('numOfBuffers');\nif (numOfBuffers == undefined) return null;\nvar ptsPerBuffer = context.get('ptsPerBuffer');\nif (ptsPerBuffer == undefined) return null;\nvar bufferPointer = context.get('bufferPointer');\nif (bufferPointer < 0)\n{\n    bufferPointer = 0;\n    var  bufferData = [];\n    for (var ibuf = 0; ibuf < numOfBuffers; ++ibuf)\n    {\n        var real = [];\n        var imag = [];\n        for (var ipt = 0; ipt < ptsPerBuffer; ++ipt)\n        {\n            real[ipt] = 0;\n            imag[ipt] = 0;\n        }\n        bufferData[ibuf] = {'real':real, 'imag':imag};\n    }\n    context.set('bufferData', bufferData);\n}\nvar bufferData = context.get('bufferData');\nfor (var ipt = 0; ipt < ptsPerBuffer; ++ipt)\n{\n    bufferData[bufferPointer].real[ipt] = msg.payload.real[ipt];\n    bufferData[bufferPointer].imag[ipt] = msg.payload.imag[ipt];\n}\n++bufferPointer;\nif (bufferPointer == numOfBuffers) bufferPointer = 0;\ncontext.set('bufferPointer', bufferPointer);\ncontext.set('bufferData', bufferData);\n\nvar real = [];\nvar imag = [];\nfor (var ibuf = 0; ibuf < numOfBuffers; ++ibuf)\n{\n    for (var ipt = 0; ipt < ptsPerBuffer; ++ipt)\n    {\n        real[ibuf * ptsPerBuffer + ipt] = bufferData[bufferPointer].real[ipt];\n        imag[ibuf * ptsPerBuffer + ipt] = bufferData[bufferPointer].imag[ipt];\n    }\n    ++bufferPointer;\n    if (bufferPointer == numOfBuffers) bufferPointer = 0;\n}\n\nreturn {topic:msg.topic, payload:{'real':real,'imag':imag}};\n\n",
         "outputs": 1,
         "noerr": 0,
-        "x": 590,
-        "y": 220,
+        "x": 490,
+        "y": 80,
         "wires": [
             [
                 "4701c7b6.e07908"
@@ -320,8 +284,8 @@
         "crontab": "",
         "once": true,
         "onceDelay": 0.1,
-        "x": 340,
-        "y": 120,
+        "x": 120,
+        "y": 40,
         "wires": [
             [
                 "e8d0cc13.f226"
@@ -340,8 +304,8 @@
         "crontab": "",
         "once": true,
         "onceDelay": 0.1,
-        "x": 350,
-        "y": 160,
+        "x": 110,
+        "y": 80,
         "wires": [
             [
                 "e8d0cc13.f226"
@@ -357,8 +321,187 @@
         "qos": "0",
         "retain": "false",
         "broker": "e0bed881.7a5db8",
-        "x": 1110,
-        "y": 220,
+        "x": 990,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "156aec5.7fc7c14",
+        "type": "function",
+        "z": "a7b9d689.b8a5e8",
+        "name": "Set Archiver Topic",
+        "func": "flow.set('archiverTopic',msg.payload)\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 290,
+        "y": 280,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "85d530a5.ef001",
+        "type": "inject",
+        "z": "a7b9d689.b8a5e8",
+        "name": "",
+        "topic": "",
+        "payload": "ARCHIVERTOPIC",
+        "payloadType": "env",
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "x": 100,
+        "y": 280,
+        "wires": [
+            [
+                "156aec5.7fc7c14",
+                "5c6a60cc.5ecf1"
+            ]
+        ]
+    },
+    {
+        "id": "e63fb641.e664b8",
+        "type": "mqtt in",
+        "z": "a7b9d689.b8a5e8",
+        "name": "",
+        "topic": "archiver/blinky-lite/demo/chill-detector/+/+/+/setting",
+        "qos": "0",
+        "broker": "e0bed881.7a5db8",
+        "x": 210,
+        "y": 380,
+        "wires": [
+            [
+                "5d3035dd.86d8bc"
+            ]
+        ]
+    },
+    {
+        "id": "5d3035dd.86d8bc",
+        "type": "json",
+        "z": "a7b9d689.b8a5e8",
+        "name": "",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 470,
+        "y": 380,
+        "wires": [
+            [
+                "5a0cb7c5.2ce198"
+            ]
+        ]
+    },
+    {
+        "id": "5a0cb7c5.2ce198",
+        "type": "function",
+        "z": "a7b9d689.b8a5e8",
+        "name": "Parse Setting",
+        "func": "var archiverTopic = flow.get('archiverTopic').split('/');\nvar inputTopic =  msg.topic.split('/');\nif (archiverTopic[4] != inputTopic[4]) return [null,null];\nvar newTopic = inputTopic[5] + '/' + inputTopic[6];\n\nreturn [\n    {topic: newTopic, payload:msg.payload.value},\n    {topic: msg.topic.replace('setting','reading'), payload:msg.payload}\n];",
+        "outputs": 2,
+        "noerr": 0,
+        "x": 620,
+        "y": 380,
+        "wires": [
+            [
+                "2466f577.5c6efa"
+            ],
+            [
+                "bd0bb877.b6e7e8"
+            ]
+        ]
+    },
+    {
+        "id": "5c6a60cc.5ecf1",
+        "type": "file in",
+        "z": "a7b9d689.b8a5e8",
+        "name": "",
+        "filename": "initSettings.json",
+        "format": "utf8",
+        "chunk": false,
+        "sendError": true,
+        "x": 280,
+        "y": 320,
+        "wires": [
+            [
+                "e8a20553.62c048"
+            ]
+        ]
+    },
+    {
+        "id": "cd110279.31668",
+        "type": "file",
+        "z": "a7b9d689.b8a5e8",
+        "name": "initSettings",
+        "filename": "initSettings.json",
+        "appendNewline": true,
+        "createDir": false,
+        "overwriteFile": "true",
+        "x": 890,
+        "y": 320,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "e8a20553.62c048",
+        "type": "json",
+        "z": "a7b9d689.b8a5e8",
+        "name": "",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 430,
+        "y": 320,
+        "wires": [
+            [
+                "c1c22c1d.bc09"
+            ]
+        ]
+    },
+    {
+        "id": "c1c22c1d.bc09",
+        "type": "function",
+        "z": "a7b9d689.b8a5e8",
+        "name": "Get initSettings",
+        "func": "var    initSettings = \n{\n        'modeMin':1, \n        'modeMax':2\n};\nif (!(\"error\" in msg)) initSettings = msg.payload;\nflow.set('initSettings',initSettings);\n\nreturn {topic:'initSettings', payload:initSettings};",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 600,
+        "y": 320,
+        "wires": [
+            [
+                "cd110279.31668"
+            ]
+        ]
+    },
+    {
+        "id": "2466f577.5c6efa",
+        "type": "function",
+        "z": "a7b9d689.b8a5e8",
+        "name": "Set initSetttings",
+        "func": "var initSettings = flow.get('initSettings');\nif (msg.topic == 'mode/min') initSettings.modeMin = msg.payload;\nif (msg.topic == 'mode/max') initSettings.modeMax = msg.payload;\nflow.set('initSettings', initSettings);\nreturn {topic:'initSettings', payload:initSettings};",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 800,
+        "y": 380,
+        "wires": [
+            [
+                "cd110279.31668"
+            ]
+        ]
+    },
+    {
+        "id": "bd0bb877.b6e7e8",
+        "type": "mqtt out",
+        "z": "a7b9d689.b8a5e8",
+        "name": "Put Reading",
+        "topic": "",
+        "qos": "",
+        "retain": "",
+        "broker": "e0bed881.7a5db8",
+        "x": 790,
+        "y": 420,
         "wires": []
     }
 ]
