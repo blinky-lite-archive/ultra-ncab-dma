@@ -20,7 +20,7 @@
   },
   "homepage": "",
   "dependencies": {
-    "node-red": "^0.19.5",
+    "node-red": "^0.20.7",
     "node-red-dashboard": "^2.12.2",
     "node-red-node-serialport": "~0.6.8"
   }
