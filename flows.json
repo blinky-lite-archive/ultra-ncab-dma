@@ -396,7 +396,8 @@
         "y": 360,
         "wires": [
             [
-                "3b875ff3.8f057"
+                "3b875ff3.8f057",
+                "6efb8499.5ae52c"
             ]
         ]
     },
@@ -477,8 +478,8 @@
         "timer": "",
         "oldrc": false,
         "name": "",
-        "x": 300,
-        "y": 420,
+        "x": 340,
+        "y": 660,
         "wires": [
             [
                 "cf3426d8.2e51a8"
@@ -498,9 +499,9 @@
         "repeat": "5",
         "crontab": "",
         "once": true,
-        "onceDelay": 0.1,
-        "x": 140,
-        "y": 420,
+        "onceDelay": "1",
+        "x": 180,
+        "y": 660,
         "wires": [
             [
                 "9780e448.67d428"
@@ -512,13 +513,98 @@
         "type": "function",
         "z": "a7b9d689.b8a5e8",
         "name": "Get Signal Quality",
-        "func": "var info = msg.payload.split('\\n')[6];\nvar linkStartIndex = info.indexOf('Link Quality=');\nvar linkStopIndex = info.indexOf('/70');\nvar linkQuality = Number(info.substring(linkStartIndex + 13, linkStopIndex));\nvar levelStartIndex = info.indexOf('level=') + 6;\nvar levelStopIndex = info.indexOf('dBm') - 1;\nvar signalLevel = Number(info.substring(levelStartIndex, levelStopIndex));\nvar val = {linkQuality : linkQuality, signalLevel: signalLevel};\nflow.set('linkQuality',linkQuality);\nflow.set('signalLevel', signalLevel);\nreturn {topic :'test',payload : val};",
+        "func": "var info = msg.payload;\nvar linkStartIndex  = info.indexOf('Link Quality=');\nvar levelStartIndex = info.indexOf('Signal level=');\nvar linkStopIndex   = info.indexOf('/70');\nvar levelStopIndex   = info.lastIndexOf('dBm');\nvar linkQuality = Number(info.substring(linkStartIndex + 13, linkStopIndex));\nvar signalLevel =  Number(info.substring(levelStartIndex + 13, levelStopIndex - 1));\nvar ssid = info.substring(info.indexOf('ESSID') + 7);\nssid = ssid.substring(0,ssid.indexOf('\"'));\nvar val = {linkQuality : linkQuality, signalLevel: signalLevel, ssid:ssid};\nflow.set('linkQuality',linkQuality);\nflow.set('signalLevel', signalLevel);\nflow.set('ssid', ssid);\nreturn {topic :'test',payload : val};",
         "outputs": 1,
         "noerr": 0,
-        "x": 480,
-        "y": 420,
+        "x": 520,
+        "y": 660,
         "wires": [
             []
+        ]
+    },
+    {
+        "id": "a5717ade.c331b8",
+        "type": "rpi-lcd",
+        "z": "a7b9d689.b8a5e8",
+        "name": "LCD Display",
+        "pins": "22,18,16,11,12,15",
+        "x": 710,
+        "y": 420,
+        "wires": []
+    },
+    {
+        "id": "2c08c784.4d4218",
+        "type": "function",
+        "z": "a7b9d689.b8a5e8",
+        "name": "Boot message",
+        "func": "//var info = '1:12345678901234567890\\n2:12345678901234567890';\nvar line1 = 'Chill Detector 03   ';\nvar line2 = 'Wifi: ' + flow.get('ssid');\nif (line2.length < 20)\n{\n    for (ii = line2.length; ii < 20; ++ii) line2 = line2 + ' ';\n}\nelse\n{\n    line2 = line2.substring(0,19);\n}\nvar message = '1:' + line1 + '\\n2:' + line2;\nreturn {topic:'test', payload:message};",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 500,
+        "y": 420,
+        "wires": [
+            [
+                "a5717ade.c331b8"
+            ]
+        ]
+    },
+    {
+        "id": "6efb8499.5ae52c",
+        "type": "delay",
+        "z": "a7b9d689.b8a5e8",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "3",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "x": 340,
+        "y": 420,
+        "wires": [
+            [
+                "2c08c784.4d4218"
+            ]
+        ]
+    },
+    {
+        "id": "7b249a10.f756e4",
+        "type": "inject",
+        "z": "a7b9d689.b8a5e8",
+        "name": "",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "repeat": "1",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "7",
+        "x": 130,
+        "y": 500,
+        "wires": [
+            [
+                "8e55ba1c.7fefb8"
+            ]
+        ]
+    },
+    {
+        "id": "8e55ba1c.7fefb8",
+        "type": "function",
+        "z": "a7b9d689.b8a5e8",
+        "name": "Update message",
+        "func": "function getAttrObject(device, propName, attrName)\n{\n    var props = device[propName];\n    var attr = props.find(attr => attr.attr === attrName);\n    return attr;\n}\nvar device  = flow.get('device');\nvar maxAmp      = getAttrObject(device, 'readings', 'maxAmp');\nvar maxAmpMode  = getAttrObject(device, 'readings', 'maxAmpMode');\nvar avgPower    = getAttrObject(device, 'readings', 'avgPower');\n\nvar maxAmpRound = Math.round(maxAmp.value * 10) / 10;\nvar maxAmpString = maxAmpRound.toString();\nif (maxAmpString.indexOf('.') < 0) maxAmpString = maxAmpString + '.0';\nif (maxAmp.value > 999.0) maxAmpString = '***.*';\nvar maxAmpSpace = '';\nif (maxAmpRound < 100.0) maxAmpSpace = maxAmpSpace + ' ';\nif (maxAmpRound < 10.0)  maxAmpSpace = maxAmpSpace + ' ';\nvar line1 = 'Amp: ' + maxAmpSpace + maxAmpString;\nline1 = line1 + ' Freq: '\nmaxAmpModeSpace = '';\nif (maxAmpMode.value < 100) maxAmpModeSpace = maxAmpModeSpace + ' ';\nif (maxAmpMode.value < 10)  maxAmpModeSpace = maxAmpModeSpace + ' ';\nline1 = line1 + maxAmpModeSpace + maxAmpMode.value.toString();\nline1 = line1 + '\\n';\nvar avgPowNormalize = Math.round(20 * (avgPower.value / avgPower.alarm.limits.high));\nif (avgPowNormalize > 20) avgPowNormalize = 20;\nvar line2 = '';\nfor (ii = 0; ii < avgPowNormalize; ++ii) line2 = line2 + '*';\nif (avgPowNormalize < 20)\n{\n    for (ii = avgPowNormalize; ii < 20; ++ii) line2 = line2 + ' ';\n}\nvar message = '1:' + line1 + '2:' + line2;\n\n//var info = '1:12345678901234567890\\n2:12345678901234567890';\nreturn {topic:'test', payload:message};",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 510,
+        "y": 500,
+        "wires": [
+            [
+                "a5717ade.c331b8"
+            ]
         ]
     }
 ]
