@@ -154,22 +154,6 @@
         ]
     },
     {
-        "id": "4701c7b6.e07908",
-        "type": "function",
-        "z": "a7b9d689.b8a5e8",
-        "name": "FFT",
-        "func": "var digAvg = 312.5; \nvar deltaDig = 287.5;\nvar npts = msg.payload.real.length;\nfor (ii = 0; ii < npts; ++ii)\n{\n    msg.payload.real[ii] = (msg.payload.real[ii] - digAvg) / deltaDig;\n    msg.payload.imag[ii] = (msg.payload.imag[ii] - digAvg) / deltaDig;\n}\n\ntransformRadix2(msg.payload.real,msg.payload.imag);\nfor (ii = 0; ii < npts; ++ii)\n{\n    msg.payload.real[ii] = msg.payload.real[ii] / npts;\n    msg.payload.imag[ii] = msg.payload.imag[ii] / npts;\n}\nreturn {'topic':'fft', 'payload':msg.payload};\n/* https://www.nayuki.io/res/free-small-fft-in-multiple-languages/fft.js\n * Computes the discrete Fourier transform (DFT) of the given complex vector, storing the result back into the vector.\n * The vector's length must be a power of 2. Uses the Cooley-Tukey decimation-in-time radix-2 algorithm.\n */\nfunction transformRadix2(real, imag) {\n\t// Length variables\n\tvar n = real.length;\n\tif (n != imag.length)\n\t\tthrow \"Mismatched lengths\";\n\tif (n == 1)  // Trivial transform\n\t\treturn;\n\tvar levels = -1;\n\tfor (var i = 0; i < 32; i++) {\n\t\tif (1 << i == n)\n\t\t\tlevels = i;  // Equal to log2(n)\n\t}\n\tif (levels == -1)\n\t\tthrow \"Length is not a power of 2\";\n\t\n\t// Trigonometric tables\n\tvar cosTable = new Array(n / 2);\n\tvar sinTable = new Array(n / 2);\n\tfor (var i = 0; i < n / 2; i++) {\n\t\tcosTable[i] = Math.cos(2 * Math.PI * i / n);\n\t\tsinTable[i] = Math.sin(2 * Math.PI * i / n);\n\t}\n\t\n\t// Bit-reversed addressing permutation\n\tfor (var i = 0; i < n; i++) {\n\t\tvar j = reverseBits(i, levels);\n\t\tif (j > i) {\n\t\t\tvar temp = real[i];\n\t\t\treal[i] = real[j];\n\t\t\treal[j] = temp;\n\t\t\ttemp = imag[i];\n\t\t\timag[i] = imag[j];\n\t\t\timag[j] = temp;\n\t\t}\n\t}\n\t\n\t// Cooley-Tukey decimation-in-time radix-2 FFT\n\tfor (var size = 2; size <= n; size *= 2) {\n\t\tvar halfsize = size / 2;\n\t\tvar tablestep = n / size;\n\t\tfor (var i = 0; i < n; i += size) {\n\t\t\tfor (var j = i, k = 0; j < i + halfsize; j++, k += tablestep) {\n\t\t\t\tvar l = j + halfsize;\n\t\t\t\tvar tpre =  real[l] * cosTable[k] + imag[l] * sinTable[k];\n\t\t\t\tvar tpim = -real[l] * sinTable[k] + imag[l] * cosTable[k];\n\t\t\t\treal[l] = real[j] - tpre;\n\t\t\t\timag[l] = imag[j] - tpim;\n\t\t\t\treal[j] += tpre;\n\t\t\t\timag[j] += tpim;\n\t\t\t}\n\t\t}\n\t}\n\t\n\t// Returns the integer whose value is the reverse of the lowest 'bits' bits of the integer 'x'.\n\tfunction reverseBits(x, bits) {\n\t\tvar y = 0;\n\t\tfor (var i = 0; i < bits; i++) {\n\t\t\ty = (y << 1) | (x & 1);\n\t\t\tx >>>= 1;\n\t\t}\n\t\treturn y;\n\t}\n}\n",
-        "outputs": 1,
-        "noerr": 0,
-        "x": 650,
-        "y": 80,
-        "wires": [
-            [
-                "e51a09aa.2b7ae8"
-            ]
-        ]
-    },
-    {
         "id": "8bf276a.f678288",
         "type": "serial out",
         "z": "a7b9d689.b8a5e8",
@@ -227,39 +211,7 @@
         "y": 140,
         "wires": [
             [
-                "e8d0cc13.f226"
-            ]
-        ]
-    },
-    {
-        "id": "e51a09aa.2b7ae8",
-        "type": "function",
-        "z": "a7b9d689.b8a5e8",
-        "name": "FFTMAG",
-        "func": "function getAttrObject(device, propName, attrName)\n{\n    var props = device[propName];\n    var attr = props.find(attr => attr.attr === attrName);\n    return attr;\n}\n\nvar npts = msg.payload.real.length\nvar npts2 = npts / 2;\nvar fftmag = [];\nvar mode = [];\nvar modeMin = 5;\nfor (var ii = 0; ii < npts2; ++ii)\n{\n    var fftMagPlus = 0.0;\n    var fftMagMinus = 0.0;\n    fftMagMinus = fftMagMinus + msg.payload.real[npts - 1 - ii] * msg.payload.real[npts - 1 - ii];\n    fftMagMinus = fftMagMinus + msg.payload.imag[npts - 1 - ii] * msg.payload.imag[npts - 1 - ii];\n    fftMagMinus = 1000.0 * Math.sqrt(fftMagMinus);\n    fftMagPlus = fftMagPlus + msg.payload.real[ii] * msg.payload.real[ii];\n    fftMagPlus = fftMagPlus + msg.payload.imag[ii] * msg.payload.imag[ii];\n    fftMagPlus = 1000.0 * Math.sqrt(fftMagPlus);\n    fftmag[ii] = (fftMagMinus + fftMagPlus) / 2;\n    mode[ii] = ii;\n}\nvar device = flow.get('device');\nvar minDisplayMode = getAttrObject(device, 'settings', 'minDisplayMode');\nvar maxDisplayMode = getAttrObject(device, 'settings', 'maxDisplayMode');\nif (minDisplayMode.value < 0) minDisplayMode.value = 0;\nif (minDisplayMode.value >= npts2) minDisplayMode.value = npts2 - 1;\nif (maxDisplayMode.value < 1) maxDisplayMode.value = 1;\nif (maxDisplayMode.value >= npts2) maxDisplayMode.value = npts2 - 1;\nif (minDisplayMode.value >= maxDisplayMode.value) minDisplayMode.value = maxDisplayMode.value - 1;\n\nfor (var ii = 0; ii < minDisplayMode.value; ++ii)\n{\n    fftmag[ii] = 0.0;\n}\n/*\nfor (var ii = maxDisplayMode.value; ii < npts2; ++ii)\n{\n    fftmag[ii] = 0.0;\n}\n*/\nvar maxAmp      = getAttrObject(device, 'readings', 'maxAmp');\nvar maxAmpMode  = getAttrObject(device, 'readings', 'maxAmpMode');\nvar avgPower    = getAttrObject(device, 'readings', 'avgPower');\nvar spectrum    = getAttrObject(device, 'readings', 'spectrum');\n\nmaxAmp.value = 0.0;\nmaxAmpMode.value = -1;\navgPower.value = 0.0;\nfor (var ii = minDisplayMode.value; ii <= maxDisplayMode.value; ++ii)\n{\n    if (maxAmp.value < fftmag[ii])\n    {\n        maxAmp.value = fftmag[ii];\n        maxAmpMode.value = ii;\n    }\n    avgPower.value = avgPower.value + fftmag[ii];\n}\navgPower.value = Math.round(100.0 * avgPower.value) / 100;\nmaxAmp.value = Math.round(100.0 * maxAmp.value) / 100;\nspectrum.value[0] = mode;\nspectrum.value[1] = fftmag;\nflow.set('device',device)\nreturn {topic:'device', payload:device};\n",
-        "outputs": 1,
-        "noerr": 0,
-        "x": 780,
-        "y": 80,
-        "wires": [
-            [
-                "1ad192b8.ef1b7d"
-            ]
-        ]
-    },
-    {
-        "id": "e8d0cc13.f226",
-        "type": "function",
-        "z": "a7b9d689.b8a5e8",
-        "name": "BoxCar Time Data",
-        "func": "if (msg.topic != 'timeData')\n{\n    context.set(msg.topic, msg.payload);\n    context.set('bufferPointer', -1);\n    return null;\n}\nvar numOfBuffers = context.get('numOfBuffers');\nif (numOfBuffers == undefined) return null;\nvar ptsPerBuffer = context.get('ptsPerBuffer');\nif (ptsPerBuffer == undefined) return null;\nvar bufferPointer = context.get('bufferPointer');\nif (bufferPointer < 0)\n{\n    bufferPointer = 0;\n    var  bufferData = [];\n    for (var ibuf = 0; ibuf < numOfBuffers; ++ibuf)\n    {\n        var real = [];\n        var imag = [];\n        for (var ipt = 0; ipt < ptsPerBuffer; ++ipt)\n        {\n            real[ipt] = 0;\n            imag[ipt] = 0;\n        }\n        bufferData[ibuf] = {'real':real, 'imag':imag};\n    }\n    context.set('bufferData', bufferData);\n}\nvar bufferData = context.get('bufferData');\nfor (var ipt = 0; ipt < ptsPerBuffer; ++ipt)\n{\n    bufferData[bufferPointer].real[ipt] = msg.payload.real[ipt];\n    bufferData[bufferPointer].imag[ipt] = msg.payload.imag[ipt];\n}\n++bufferPointer;\nif (bufferPointer == numOfBuffers) bufferPointer = 0;\ncontext.set('bufferPointer', bufferPointer);\ncontext.set('bufferData', bufferData);\n\nvar real = [];\nvar imag = [];\nfor (var ibuf = 0; ibuf < numOfBuffers; ++ibuf)\n{\n    for (var ipt = 0; ipt < ptsPerBuffer; ++ipt)\n    {\n        real[ibuf * ptsPerBuffer + ipt] = bufferData[bufferPointer].real[ipt];\n        imag[ibuf * ptsPerBuffer + ipt] = bufferData[bufferPointer].imag[ipt];\n    }\n    ++bufferPointer;\n    if (bufferPointer == numOfBuffers) bufferPointer = 0;\n}\n\nreturn {topic:msg.topic, payload:{'real':real,'imag':imag}};\n\n",
-        "outputs": 1,
-        "noerr": 0,
-        "x": 490,
-        "y": 80,
-        "wires": [
-            [
-                "4701c7b6.e07908"
+                "798b17bc.417c98"
             ]
         ]
     },
@@ -279,7 +231,7 @@
         "y": 40,
         "wires": [
             [
-                "e8d0cc13.f226"
+                "798b17bc.417c98"
             ]
         ]
     },
@@ -299,7 +251,7 @@
         "y": 80,
         "wires": [
             [
-                "e8d0cc13.f226"
+                "798b17bc.417c98"
             ]
         ]
     },
@@ -346,7 +298,7 @@
         "wires": [
             [
                 "bd2beb50.e5c8b8",
-                "6dc631be.a8f27"
+                "756b3c4.e8f1dc4"
             ]
         ]
     },
@@ -448,22 +400,6 @@
         "wires": [
             [
                 "bd2beb50.e5c8b8"
-            ]
-        ]
-    },
-    {
-        "id": "1ad192b8.ef1b7d",
-        "type": "function",
-        "z": "a7b9d689.b8a5e8",
-        "name": "Check Reading Alarms",
-        "func": "function getAttrObject(device, propName, attrName)\n{\n    var props = device[propName];\n    var attr = props.find(attr => attr.attr === attrName);\n    return attr;\n}\n\nvar linkQuality = getAttrObject(msg.payload, 'readings', 'linkQuality');\nvar signalLevel = getAttrObject(msg.payload, 'readings', 'signalLevel');\nlinkQuality.value = flow.get('linkQuality');\nsignalLevel.value = flow.get('signalLevel');\nfor (var ii = 0; ii < msg.payload.readings.length; ++ii)\n{\n    if (msg.payload.readings[ii].type == 'scalar')\n    {\n        msg.payload.readings[ii].alarm.value = 0;\n        if (!isNaN(msg.payload.readings[ii].value))\n        {\n            if (msg.payload.readings[ii].value < msg.payload.readings[ii].alarm.limits.low)  msg.payload.readings[ii].alarm.value = 1;\n            if (msg.payload.readings[ii].value < msg.payload.readings[ii].alarm.limits.lolo) msg.payload.readings[ii].alarm.value = 3;\n            if (msg.payload.readings[ii].value > msg.payload.readings[ii].alarm.limits.high) msg.payload.readings[ii].alarm.value = 2;\n            if (msg.payload.readings[ii].value > msg.payload.readings[ii].alarm.limits.hihi) msg.payload.readings[ii].alarm.value = 4;\n        }\n    }\n}\nflow.set('device', msg.payload);\nreturn msg;",
-        "outputs": 1,
-        "noerr": 0,
-        "x": 980,
-        "y": 80,
-        "wires": [
-            [
-                "ae145b10.dcad98"
             ]
         ]
     },
@@ -604,6 +540,116 @@
         "wires": [
             [
                 "a5717ade.c331b8"
+            ]
+        ]
+    },
+    {
+        "id": "798b17bc.417c98",
+        "type": "function",
+        "z": "a7b9d689.b8a5e8",
+        "name": "BoxCar Time Data",
+        "func": "flow.set('sampleRate',512.0 / 2.9); // in sec measured with 512 points and 2 ms in dev controller\nif (msg.topic != 'timeData')\n{\n    context.set(msg.topic, msg.payload);\n    context.set('bufferPointer', -1);\n    return null;\n}\nvar numOfBuffers = context.get('numOfBuffers');\nif (numOfBuffers == undefined) return null;\nvar ptsPerBuffer = context.get('ptsPerBuffer');\nif (ptsPerBuffer == undefined) return null;\nvar bufferPointer = context.get('bufferPointer');\nif (bufferPointer < 0)\n{\n    bufferPointer = 0;\n    var  bufferData = [];\n    for (var ibuf = 0; ibuf < numOfBuffers; ++ibuf)\n    {\n        var real = [];\n        var imag = [];\n        for (var ipt = 0; ipt < ptsPerBuffer; ++ipt)\n        {\n            real[ipt] = 0;\n            imag[ipt] = 0;\n        }\n        bufferData[ibuf] = {'real':real, 'imag':imag};\n    }\n    context.set('bufferData', bufferData);\n}\nvar bufferData = context.get('bufferData');\nfor (var ipt = 0; ipt < ptsPerBuffer; ++ipt)\n{\n    bufferData[bufferPointer].real[ipt] = msg.payload.real[ipt];\n    bufferData[bufferPointer].imag[ipt] = msg.payload.imag[ipt];\n}\n++bufferPointer;\nif (bufferPointer == numOfBuffers) bufferPointer = 0;\ncontext.set('bufferPointer', bufferPointer);\ncontext.set('bufferData', bufferData);\n\nvar real = [];\nvar imag = [];\nfor (var ibuf = 0; ibuf < numOfBuffers; ++ibuf)\n{\n    for (var ipt = 0; ipt < ptsPerBuffer; ++ipt)\n    {\n        real[ibuf * ptsPerBuffer + ipt] = bufferData[bufferPointer].real[ipt];\n        imag[ibuf * ptsPerBuffer + ipt] = bufferData[bufferPointer].imag[ipt];\n    }\n    ++bufferPointer;\n    if (bufferPointer == numOfBuffers) bufferPointer = 0;\n}\n\nreturn {topic:msg.topic, payload:{'real':real,'imag':imag}};\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 450,
+        "y": 80,
+        "wires": [
+            [
+                "47f8e462.5c45bc"
+            ]
+        ]
+    },
+    {
+        "id": "47f8e462.5c45bc",
+        "type": "function",
+        "z": "a7b9d689.b8a5e8",
+        "name": "Angle FFT",
+        "func": "var lambda2 = 4125.0 // half wavelength at 40 kHz microns\nvar npts = msg.payload.real.length;\nvar tiny = 1.0e-6;\nvar thetaTime = [];\nvar thetaRealFft = [];\nvar thetaImagFtt = [];\nvar thetaAvg = 0.0;\nfor (ii = 0; ii < npts; ++ii)\n{\n    msg.payload.imag[ii] = (msg.payload.imag[ii] - 512.0) / 512.0;\n    msg.payload.real[ii] = (msg.payload.real[ii] - 512.0) / 512.0;\n    thetaTime[ii] = lambda2 * Math.atan2(msg.payload.imag[ii], msg.payload.real[ii] + tiny) / Math.PI;\n    thetaAvg = thetaAvg + thetaTime[ii];\n}\nthetaAvg = thetaAvg / npts;\nfor (ii = 0; ii < npts; ++ii)\n{\n    thetaTime[ii] = thetaTime[ii] - thetaAvg;\n    thetaRealFft[ii] = thetaTime[ii];\n    thetaImagFtt[ii] = 0.0;\n    \n}\ntransformRadix2(thetaRealFft,thetaImagFtt);\nvar thetaRealIFft = [];\nvar thetaImagIFtt = [];\nvar sqrtNpts = Math.sqrt(npts);\n\nfor (ii = 0; ii < npts; ++ii)\n{\n    thetaRealFft[ii] = thetaRealFft[ii] / sqrtNpts;\n    thetaImagFtt[ii] = thetaImagFtt[ii] / sqrtNpts;\n    thetaRealIFft[ii] = thetaRealFft[ii] / sqrtNpts;\n    thetaImagIFtt[ii] = -thetaImagFtt[ii] / sqrtNpts;\n}\nthetaRealFft[0] = 0.0;\nthetaImagFtt[0] = 0.0;\nthetaRealIFft[0] = 0.0;\nthetaImagIFtt[0] = 0.0;\nthetaRealFft[npts / 2] = 0.0;\nthetaImagFtt[npts / 2] = 0.0;\nthetaRealIFft[npts / 2] = 0.0;\nthetaImagIFtt[npts / 2] = 0.0;\n\nvar device = flow.get('device');\nvar npts2 = npts / 2;\nvar minDisplayMode = getAttrObject(device, 'settings', 'minDisplayMode');\nvar maxDisplayMode = getAttrObject(device, 'settings', 'maxDisplayMode');\n\nvar sampleRate = flow.get('sampleRate');\nvar minDisplayModeIndex = Math.round(minDisplayMode.value * npts / sampleRate);\nif (minDisplayModeIndex < 1)  minDisplayModeIndex = 1;\nif (minDisplayModeIndex >= npts2)  minDisplayModeIndex = npts2 - 1;\n\nvar maxDisplayModeIndex = Math.round(maxDisplayMode.value * npts / sampleRate);\nif (maxDisplayModeIndex < 1)  maxDisplayModeIndex = 1;\nif (maxDisplayModeIndex >= npts2)  maxDisplayModeIndex = npts2 - 1;\n\nfor (var ii = 1; ii < minDisplayModeIndex; ++ii)\n{\n    thetaRealFft[ii] = 0.0;\n    thetaImagFtt[ii] = 0.0;\n    thetaRealIFft[ii] = 0.0;\n    thetaImagIFtt[ii] = 0.0;\n    \n    thetaRealFft[npts - ii] = 0.0;\n    thetaImagFtt[npts - ii] = 0.0;\n    thetaRealIFft[npts - ii] = 0.0;\n    thetaImagIFtt[npts - ii] = 0.0;\n}\n\nfor (var ii = maxDisplayModeIndex; ii < npts2; ++ii)\n{\n    thetaRealIFft[ii] = 0.0;\n    thetaImagIFtt[ii] = 0.0;\n\n    thetaRealIFft[npts - ii] = 0.0;\n    thetaImagIFtt[npts - ii] = 0.0;\n    \n}\n\ntransformRadix2(thetaRealIFft,thetaImagIFtt);\n//node.warn({'topic':'ifft', 'payload':{time:thetaTime,real:thetaRealIFft,imag:thetaImagIFtt}});\nreturn {'topic':'fft', 'payload':{time:thetaRealIFft,real:thetaRealFft,imag:thetaImagFtt}};\n\nfunction getAttrObject(device, propName, attrName)\n{\n    var props = device[propName];\n    var attr = props.find(attr => attr.attr === attrName);\n    return attr;\n}\n\n\n/* https://www.nayuki.io/res/free-small-fft-in-multiple-languages/fft.js\n * Computes the discrete Fourier transform (DFT) of the given complex vector, storing the result back into the vector.\n * The vector's length must be a power of 2. Uses the Cooley-Tukey decimation-in-time radix-2 algorithm.\n */\nfunction transformRadix2(real, imag) {\n\t// Length variables\n\tvar n = real.length;\n\tif (n != imag.length)\n\t\tthrow \"Mismatched lengths\";\n\tif (n == 1)  // Trivial transform\n\t\treturn;\n\tvar levels = -1;\n\tfor (var i = 0; i < 32; i++) {\n\t\tif (1 << i == n)\n\t\t\tlevels = i;  // Equal to log2(n)\n\t}\n\tif (levels == -1)\n\t\tthrow \"Length is not a power of 2\";\n\t\n\t// Trigonometric tables\n\tvar cosTable = new Array(n / 2);\n\tvar sinTable = new Array(n / 2);\n\tfor (var i = 0; i < n / 2; i++) {\n\t\tcosTable[i] = Math.cos(2 * Math.PI * i / n);\n\t\tsinTable[i] = Math.sin(2 * Math.PI * i / n);\n\t}\n\t\n\t// Bit-reversed addressing permutation\n\tfor (var i = 0; i < n; i++) {\n\t\tvar j = reverseBits(i, levels);\n\t\tif (j > i) {\n\t\t\tvar temp = real[i];\n\t\t\treal[i] = real[j];\n\t\t\treal[j] = temp;\n\t\t\ttemp = imag[i];\n\t\t\timag[i] = imag[j];\n\t\t\timag[j] = temp;\n\t\t}\n\t}\n\t\n\t// Cooley-Tukey decimation-in-time radix-2 FFT\n\tfor (var size = 2; size <= n; size *= 2) {\n\t\tvar halfsize = size / 2;\n\t\tvar tablestep = n / size;\n\t\tfor (var i = 0; i < n; i += size) {\n\t\t\tfor (var j = i, k = 0; j < i + halfsize; j++, k += tablestep) {\n\t\t\t\tvar l = j + halfsize;\n\t\t\t\tvar tpre =  real[l] * cosTable[k] + imag[l] * sinTable[k];\n\t\t\t\tvar tpim = -real[l] * sinTable[k] + imag[l] * cosTable[k];\n\t\t\t\treal[l] = real[j] - tpre;\n\t\t\t\timag[l] = imag[j] - tpim;\n\t\t\t\treal[j] += tpre;\n\t\t\t\timag[j] += tpim;\n\t\t\t}\n\t\t}\n\t}\n\t\n\t// Returns the integer whose value is the reverse of the lowest 'bits' bits of the integer 'x'.\n\tfunction reverseBits(x, bits) {\n\t\tvar y = 0;\n\t\tfor (var i = 0; i < bits; i++) {\n\t\t\ty = (y << 1) | (x & 1);\n\t\t\tx >>>= 1;\n\t\t}\n\t\treturn y;\n\t}\n}\nvar chart = \n[\n    {\n        \"series\": [\"Theta\"],\n        \"data\": \n        [\n            traceTheta\n        ],\n        \"labels\": [\"\"]\n    }\n];\n\nreturn {topic:'theta',payload:chart};",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 640,
+        "y": 80,
+        "wires": [
+            [
+                "495d076.c7e32f8"
+            ]
+        ]
+    },
+    {
+        "id": "495d076.c7e32f8",
+        "type": "function",
+        "z": "a7b9d689.b8a5e8",
+        "name": "FFTMAG",
+        "func": "function getAttrObject(device, propName, attrName)\n{\n    var props = device[propName];\n    var attr = props.find(attr => attr.attr === attrName);\n    return attr;\n}\n\nvar npts = msg.payload.real.length\nvar npts2 = npts / 2;\nvar fftmag = [];\nvar mode = [];\nvar modeMin = 0.01;\nvar sampleRate = flow.get('sampleRate');\n\nvar norm = 8;\nfor (var ii = 0; ii < npts2; ++ii)\n{\n    fftmag[ii] =  Math.sqrt(msg.payload.real[ii] * msg.payload.real[ii] + msg.payload.imag[ii] * msg.payload.imag[ii]) / norm;\n    mode[ii] = ii * sampleRate / npts;\n}\nvar device = flow.get('device');\nvar maxAmp      = getAttrObject(device, 'readings', 'maxAmp');\nvar maxAmpMode  = getAttrObject(device, 'readings', 'maxAmpMode');\nvar avgPower    = getAttrObject(device, 'readings', 'avgPower');\nvar spectrum    = getAttrObject(device, 'readings', 'spectrum');\nvar timeTrace    = getAttrObject(device, 'readings', 'timeTrace');\n\nvar minDisplayMode = getAttrObject(device, 'settings', 'minDisplayMode');\nvar maxDisplayMode = getAttrObject(device, 'settings', 'maxDisplayMode');\n\nvar minDisplayModeIndex = Math.round(minDisplayMode.value * npts / sampleRate);\nif (minDisplayModeIndex < 1)  minDisplayModeIndex = 1;\nif (minDisplayModeIndex >= npts2)  minDisplayModeIndex = npts2 - 1;\n\nvar maxDisplayModeIndex = Math.round(maxDisplayMode.value * npts / sampleRate);\nif (maxDisplayModeIndex < 1)  maxDisplayModeIndex = 1;\nif (maxDisplayModeIndex >= npts2)  maxDisplayModeIndex = npts2 - 1;\n\nmaxAmp.value = 0.0;\nmaxAmpMode.value = -1;\navgPower.value = 0.0;\nfor (var ii = minDisplayModeIndex; ii <= maxDisplayModeIndex; ++ii)\n{\n    if (maxAmp.value < fftmag[ii])\n    {\n        maxAmp.value = fftmag[ii];\n        maxAmpMode.value = ii * sampleRate / npts;\n    }\n    avgPower.value = avgPower.value + fftmag[ii];\n}\nfor (var ii = 0; ii < msg.payload.time.length; ++ii)\n{\n    timeTrace.value[0][ii] = 1000.0 * ii / sampleRate;\n    timeTrace.value[1][ii] = msg.payload.time[ii];\n}\navgPower.value = Math.round(100.0 * avgPower.value) / 100;\nmaxAmp.value = Math.round(100.0 * maxAmp.value) / 100;\nspectrum.value[0] = mode;\nspectrum.value[1] = fftmag;\nflow.set('device',device)\nreturn {topic:'device', payload:device};\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 800,
+        "y": 80,
+        "wires": [
+            [
+                "5f8e48e.25e96b8"
+            ]
+        ]
+    },
+    {
+        "id": "5f8e48e.25e96b8",
+        "type": "function",
+        "z": "a7b9d689.b8a5e8",
+        "name": "Check Reading Alarms",
+        "func": "function getAttrObject(device, propName, attrName)\n{\n    var props = device[propName];\n    var attr = props.find(attr => attr.attr === attrName);\n    return attr;\n}\n\nvar linkQuality = getAttrObject(msg.payload, 'readings', 'linkQuality');\nvar signalLevel = getAttrObject(msg.payload, 'readings', 'signalLevel');\nlinkQuality.value = flow.get('linkQuality');\nsignalLevel.value = flow.get('signalLevel');\nfor (var ii = 0; ii < msg.payload.readings.length; ++ii)\n{\n    if (msg.payload.readings[ii].type == 'scalar')\n    {\n        msg.payload.readings[ii].alarm.value = 0;\n        if (!isNaN(msg.payload.readings[ii].value))\n        {\n            if (msg.payload.readings[ii].value < msg.payload.readings[ii].alarm.limits.low)  msg.payload.readings[ii].alarm.value = 1;\n            if (msg.payload.readings[ii].value < msg.payload.readings[ii].alarm.limits.lolo) msg.payload.readings[ii].alarm.value = 3;\n            if (msg.payload.readings[ii].value > msg.payload.readings[ii].alarm.limits.high) msg.payload.readings[ii].alarm.value = 2;\n            if (msg.payload.readings[ii].value > msg.payload.readings[ii].alarm.limits.hihi) msg.payload.readings[ii].alarm.value = 4;\n        }\n    }\n}\nflow.set('device', msg.payload);\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 980,
+        "y": 80,
+        "wires": [
+            [
+                "ae145b10.dcad98"
+            ]
+        ]
+    },
+    {
+        "id": "5ad576b8.15b078",
+        "type": "function",
+        "z": "a7b9d689.b8a5e8",
+        "name": "Measure time interval",
+        "func": "var lastTime = context.get('lastTime');\nvar avgDeltaT = context.get('avgDeltaT');\nif (lastTime == undefined)\n{\n    lastTime = new Date().getTime();\n    context.set('lastTime',lastTime);\n    context.set('avgDeltaT',0.0);\n    return null;\n}\nvar nowtime = new Date().getTime();\nvar deltaT = nowtime - lastTime;\navgDeltaT = avgDeltaT + (deltaT - avgDeltaT) / 100;\ncontext.set('lastTime',nowtime);\ncontext.set('avgDeltaT',avgDeltaT);\nreturn {topic:'deltaT', payload:avgDeltaT};",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 600,
+        "y": 140,
+        "wires": [
+            [
+                "44118e37.34558"
+            ]
+        ]
+    },
+    {
+        "id": "44118e37.34558",
+        "type": "debug",
+        "z": "a7b9d689.b8a5e8",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "x": 830,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "756b3c4.e8f1dc4",
+        "type": "function",
+        "z": "a7b9d689.b8a5e8",
+        "name": "Make Pretty",
+        "func": "var jsonPretty = JSON.stringify(msg.payload,null,2);\nreturn {topic: msg.payload, payload:jsonPretty};",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 800,
+        "y": 300,
+        "wires": [
+            [
+                "6dc631be.a8f27"
             ]
         ]
     }
