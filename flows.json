@@ -117,7 +117,7 @@
         "responsetimeout": "10000"
     },
     {
-        "id": "9b419752.747168",
+        "id": "31f24433.6d114c",
         "type": "mqtt-broker",
         "z": "",
         "name": "MQTT Broker",
@@ -256,36 +256,6 @@
         ]
     },
     {
-        "id": "ae145b10.dcad98",
-        "type": "mqtt out",
-        "z": "a7b9d689.b8a5e8",
-        "name": "Publish Readings",
-        "topic": "$(MQTTPUBLISHTOPIC)",
-        "qos": "0",
-        "retain": "false",
-        "broker": "9b419752.747168",
-        "x": 1190,
-        "y": 80,
-        "wires": []
-    },
-    {
-        "id": "ca719e8e.03b35",
-        "type": "mqtt in",
-        "z": "a7b9d689.b8a5e8",
-        "name": "Subscribe Settings",
-        "topic": "$(MQTTSUBSCRIBETOPIC)",
-        "qos": "0",
-        "datatype": "auto",
-        "broker": "9b419752.747168",
-        "x": 130,
-        "y": 300,
-        "wires": [
-            [
-                "78bcaa1a.e584a4"
-            ]
-        ]
-    },
-    {
         "id": "78bcaa1a.e584a4",
         "type": "json",
         "z": "a7b9d689.b8a5e8",
@@ -293,7 +263,7 @@
         "property": "payload",
         "action": "",
         "pretty": false,
-        "x": 290,
+        "x": 330,
         "y": 300,
         "wires": [
             [
@@ -580,7 +550,7 @@
         "type": "function",
         "z": "a7b9d689.b8a5e8",
         "name": "FFTMAG",
-        "func": "function getAttrObject(device, propName, attrName)\n{\n    var props = device[propName];\n    var attr = props.find(attr => attr.attr === attrName);\n    return attr;\n}\n\nvar npts = msg.payload.real.length\nvar npts2 = npts / 2;\nvar fftmag = [];\nvar mode = [];\nvar modeMin = 0.01;\nvar sampleRate = flow.get('sampleRate');\n\nvar norm = 8;\nfor (var ii = 0; ii < npts2; ++ii)\n{\n    fftmag[ii] =  Math.sqrt(msg.payload.real[ii] * msg.payload.real[ii] + msg.payload.imag[ii] * msg.payload.imag[ii]) / norm;\n    mode[ii] = ii * sampleRate / npts;\n}\nvar device = flow.get('device');\nvar maxAmp      = getAttrObject(device, 'readings', 'maxAmp');\nvar maxAmpMode  = getAttrObject(device, 'readings', 'maxAmpMode');\nvar avgPower    = getAttrObject(device, 'readings', 'avgPower');\nvar spectrum    = getAttrObject(device, 'readings', 'spectrum');\nvar timeTrace    = getAttrObject(device, 'readings', 'timeTrace');\n\nvar minDisplayMode = getAttrObject(device, 'settings', 'minDisplayMode');\nvar maxDisplayMode = getAttrObject(device, 'settings', 'maxDisplayMode');\n\nvar minDisplayModeIndex = Math.round(minDisplayMode.value * npts / sampleRate);\nif (minDisplayModeIndex < 1)  minDisplayModeIndex = 1;\nif (minDisplayModeIndex >= npts2)  minDisplayModeIndex = npts2 - 1;\n\nvar maxDisplayModeIndex = Math.round(maxDisplayMode.value * npts / sampleRate);\nif (maxDisplayModeIndex < 1)  maxDisplayModeIndex = 1;\nif (maxDisplayModeIndex >= npts2)  maxDisplayModeIndex = npts2 - 1;\n\nmaxAmp.value = 0.0;\nmaxAmpMode.value = -1;\navgPower.value = 0.0;\nfor (var ii = minDisplayModeIndex; ii <= maxDisplayModeIndex; ++ii)\n{\n    if (maxAmp.value < fftmag[ii])\n    {\n        maxAmp.value = fftmag[ii];\n        maxAmpMode.value = ii * sampleRate / npts;\n    }\n    avgPower.value = avgPower.value + fftmag[ii];\n}\nfor (var ii = 0; ii < msg.payload.time.length; ++ii)\n{\n    timeTrace.value[0][ii] = 1000.0 * ii / sampleRate;\n    timeTrace.value[1][ii] = msg.payload.time[ii];\n}\navgPower.value = Math.round(100.0 * avgPower.value) / 100;\nmaxAmp.value = Math.round(100.0 * maxAmp.value) / 100;\nspectrum.value[0] = mode;\nspectrum.value[1] = fftmag;\nflow.set('device',device)\nreturn {topic:'device', payload:device};\n",
+        "func": "function getAttrObject(device, propName, attrName)\n{\n    var props = device[propName];\n    var attr = props.find(attr => attr.attr === attrName);\n    return attr;\n}\n\nvar npts = msg.payload.real.length\nvar npts2 = npts / 2;\nvar fftmag = [];\nvar mode = [];\nvar modeMin = 0.01;\nvar sampleRate = flow.get('sampleRate');\n\nvar norm = 8;\nfor (var ii = 0; ii < npts2; ++ii)\n{\n    fftmag[ii] =  Math.sqrt(msg.payload.real[ii] * msg.payload.real[ii] + msg.payload.imag[ii] * msg.payload.imag[ii]) / norm;\n    mode[ii] = ii * sampleRate / npts;\n}\nvar device = flow.get('device');\nvar maxAmp      = getAttrObject(device, 'readings', 'maxAmp');\nvar maxAmpMode  = getAttrObject(device, 'readings', 'maxAmpMode');\nvar avgPower    = getAttrObject(device, 'readings', 'avgPower');\nvar spectrum    = getAttrObject(device, 'readings', 'spectrum');\nvar timeTrace    = getAttrObject(device, 'readings', 'timeTrace');\n\nvar minDisplayMode = getAttrObject(device, 'settings', 'minDisplayMode');\nvar maxDisplayMode = getAttrObject(device, 'settings', 'maxDisplayMode');\n\nvar minDisplayModeIndex = Math.round(minDisplayMode.value * npts / sampleRate);\nif (minDisplayModeIndex < 1)  minDisplayModeIndex = 1;\nif (minDisplayModeIndex >= npts2)  minDisplayModeIndex = npts2 - 1;\n\nvar maxDisplayModeIndex = Math.round(maxDisplayMode.value * npts / sampleRate);\nif (maxDisplayModeIndex < 1)  maxDisplayModeIndex = 1;\nif (maxDisplayModeIndex >= npts2)  maxDisplayModeIndex = npts2 - 1;\n\nmaxAmp.value = 0.0;\nmaxAmpMode.value = -1;\navgPower.value = 0.0;\nfor (var ii = minDisplayModeIndex; ii <= maxDisplayModeIndex; ++ii)\n{\n    if (maxAmp.value < fftmag[ii])\n    {\n        maxAmp.value = fftmag[ii];\n        maxAmpMode.value = ii * sampleRate / npts;\n    }\n    avgPower.value = avgPower.value + fftmag[ii];\n}\nfor (var ii = 0; ii < msg.payload.time.length; ++ii)\n{\n    timeTrace.value[0][ii] = 1000.0 * ii / sampleRate;\n    timeTrace.value[1][ii] = msg.payload.time[ii];\n}\navgPower.value = Math.round(100.0 * avgPower.value) / 100;\nmaxAmp.value = Math.round(100.0 * maxAmp.value) / 100;\nmaxAmpMode.value = Math.round(100.0 * maxAmpMode.value) / 100;\nspectrum.value[0] = mode;\nspectrum.value[1] = fftmag;\nflow.set('device',device)\nreturn {topic:'device', payload:device};\n",
         "outputs": 1,
         "noerr": 0,
         "x": 800,
@@ -603,7 +573,7 @@
         "y": 80,
         "wires": [
             [
-                "ae145b10.dcad98"
+                "2a6f9a2c.6a8766"
             ]
         ]
     },
@@ -650,6 +620,36 @@
         "wires": [
             [
                 "6dc631be.a8f27"
+            ]
+        ]
+    },
+    {
+        "id": "2a6f9a2c.6a8766",
+        "type": "mqtt out",
+        "z": "a7b9d689.b8a5e8",
+        "name": "Publish Readings",
+        "topic": "$(MQTTPUBLISHTOPIC)",
+        "qos": "0",
+        "retain": "false",
+        "broker": "31f24433.6d114c",
+        "x": 1200,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "83cf463e.039098",
+        "type": "mqtt in",
+        "z": "a7b9d689.b8a5e8",
+        "name": "Subscribe Settings",
+        "topic": "$(MQTTSUBSCRIBETOPIC)",
+        "qos": "0",
+        "datatype": "auto",
+        "broker": "31f24433.6d114c",
+        "x": 150,
+        "y": 300,
+        "wires": [
+            [
+                "78bcaa1a.e584a4"
             ]
         ]
     }
