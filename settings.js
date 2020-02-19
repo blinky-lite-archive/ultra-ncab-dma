@@ -108,7 +108,7 @@ module.exports = {
 
     // If you installed the optional node-red-dashboard you can set it's path
     // relative to httpRoot
-    //ui: { path: "ui" },
+    ui: { path: "ui" },
 
     // Securing Node-RED
     // -----------------
@@ -131,8 +131,8 @@ module.exports = {
     // the static content (httpStatic), the following properties can be used.
     // The pass field is a bcrypt hash of the password.
     // See http://nodered.org/docs/security.html#generating-the-password-hash
-    httpNodeAuth: {user:"user",pass:"$2a$08$KaclKnSDZ7.pGtci1ZSOIep/Dqu582RURal12L7kbJ1bnv/SYPNFq"},
-    httpStaticAuth: {user:"user",pass:"$2a$08$KaclKnSDZ7.pGtci1ZSOIep/Dqu582RURal12L7kbJ1bnv/SYPNFq"},
+    //httpNodeAuth: {user:"user",pass:"$2a$08$KaclKnSDZ7.pGtci1ZSOIep/Dqu582RURal12L7kbJ1bnv/SYPNFq"},
+    //httpStaticAuth: {user:"user",pass:"$2a$08$KaclKnSDZ7.pGtci1ZSOIep/Dqu582RURal12L7kbJ1bnv/SYPNFq"},
 
     // The following property can be used to enable HTTPS
     // See http://nodejs.org/api/https.html#https_https_createserver_options_requestlistener
