@@ -321,7 +321,7 @@
         "y": 40,
         "wires": [
             [
-                "446195e5.f3e64c"
+                "3b89af4b.e86f4"
             ]
         ]
     },
@@ -335,7 +335,7 @@
         "createDir": false,
         "overwriteFile": "true",
         "encoding": "none",
-        "x": 860,
+        "x": 880,
         "y": 40,
         "wires": [
             []
@@ -494,22 +494,6 @@
         "wires": [
             [
                 "a55c75d1.767a58"
-            ]
-        ]
-    },
-    {
-        "id": "446195e5.f3e64c",
-        "type": "function",
-        "z": "758e0e20.2b99f",
-        "name": "Settings Alarm Scan",
-        "func": "scalarAlarmScan(msg.payload, 'setting');\nflow.set('device', msg.payload); \n\nreturn msg.payload;\n\nfunction getActionArray(device, type, actionType)\n{\n    var actionArray = [];\n    var keys = Object.keys(device);\n    for (var ii = 0; ii < keys.length; ++ii)\n    {\n        if (device[keys[ii]].hasOwnProperty('type'))\n        {\n            if (device[keys[ii]].type == type)\n            {\n                if (device[keys[ii]].action == actionType)\n                {\n                    actionArray.push(device[keys[ii]]);\n                }\n            }\n        }\n    }\n    return actionArray;\n}\nfunction scalarAlarmScan(device, actionType)\n{\n    var actionArray = getActionArray(device, 'scalar', actionType);\n    if (actionArray.length > 0)\n    {\n        for (var ii = 0; ii < actionArray.length; ++ii)\n        {\n            actionArray[ii].alarm.value = 0;\n            if (!isNaN(actionArray[ii].value))\n            {\n                if (actionArray[ii].value < actionArray[ii].alarm.limits.low)  actionArray[ii].alarm.value = 1;\n                if (actionArray[ii].value < actionArray[ii].alarm.limits.lolo) actionArray[ii].alarm.value = 3;\n                if (actionArray[ii].value > actionArray[ii].alarm.limits.high) actionArray[ii].alarm.value = 2;\n                if (actionArray[ii].value > actionArray[ii].alarm.limits.hihi) actionArray[ii].alarm.value = 4;\n            }\n        }\n    }\n}\n",
-        "outputs": 1,
-        "noerr": 0,
-        "x": 480,
-        "y": 40,
-        "wires": [
-            [
-                "f98d91f7.09114"
             ]
         ]
     },
@@ -1202,7 +1186,7 @@
         "y": 100,
         "wires": [
             [
-                "446195e5.f3e64c"
+                "3b89af4b.e86f4"
             ]
         ]
     },
@@ -1217,8 +1201,8 @@
         "syntax": "mustache",
         "template": "    <div width=\"100%\">\n        <div class='row' style='padding-bottom: 25px;'>\n            <div class='col-md-12'>\n{{{payload.html.spectrogram}}}\n            </div>\n        </div>\n        <div class='row' style='padding-bottom: 25px;'>\n            <div class='col-md-12'>\n{{{payload.html.ultraAmpBar}}}\n            </div>\n        </div>\n        <div class='row' style='padding-bottom: 25px;'>\n            <div class='col-md-12'>\n{{{payload.html.settings}}}\n            </div>\n        </div>\n        <div class='row' style='padding-bottom: 25px;'>\n            <div class='col-md-12'>\n{{{payload.html.wifimon}}}\n            </div>\n        </div>\n    </div>\n",
         "output": "str",
-        "x": 970,
-        "y": 1180,
+        "x": 1130,
+        "y": 1240,
         "wires": [
             [
                 "2e1c4c65.b09f14"
@@ -1234,10 +1218,10 @@
         "fieldType": "msg",
         "format": "javascript",
         "syntax": "mustache",
-        "template": "{{{payload.script.global}}}\n{{{payload.script.spectrogram}}}\n{{{payload.script.editAmpPower}}}\n{{{payload.script.horzbarWidget}}}\n",
+        "template": "{{{payload.script.global}}}\n{{{payload.script.spectrogram}}}\n{{{payload.script.editAmpPower}}}\n{{{payload.script.horzbarWidget}}}\n{{{payload.script.editDevice}}}",
         "output": "str",
         "x": 640,
-        "y": 1060,
+        "y": 1100,
         "wires": [
             [
                 "b39c457.ebdf9b8"
@@ -1314,7 +1298,7 @@
         "y": 1020,
         "wires": [
             [
-                "4f1f8295.e094cc"
+                "c78fbfbb.7037"
             ]
         ]
     },
@@ -1329,8 +1313,8 @@
         "syntax": "mustache",
         "template": "                <div class='card'>\n                    <div class='row'>\n                        <div class='col-md-3'>\n                        </div>\n                        <div class='col-md-6'>\n                            <p class='card-title'>Spectrogram</p>\n                         </div>\n                        <div class='col-md-3'>\n                        </div>\n                    </div>\n                    <div class='card-body' align=\"center\">\n                        <div class='row'>\n                            <div class='col-md-12'>\n                                <div class=\"container-fluid spectrogram\" align=\"center\" id=\"spectrogram\"></div>\n                                <div width=\"100%\">\n                                    <div class=\"row\"> \n                                        <div class=\"col-md-6\" align=\"center\" style=\"padding-top:10px;padding-bottom:10px;\">\n                                            <button class=\"btn jumbotron-button btn-block big-text\" id=\"freezeButton\" type=\"button\" onclick=\"freezeRun()\"></button>\n                                        </div>\n                                        <div class=\"col-md-6\" align=\"center\" style=\"padding-top:10px;padding-bottom:10px;\">\n                                            <button class=\"btn jumbotron-button btn-block big-text\" id=\"birdsEyeButton\" type=\"button\" onclick=\"birdsEyeView()\">Birds Eye</button>\n                                        </div>\n                                    </div>\n                                    <div class=\"row\"> \n                                        <div class=\"col-md-6\" align=\"center\" style=\"padding-top:10px;padding-bottom:10px;\">\n                                            <button class=\"btn jumbotron-button btn-block big-text\" id=\"sliceViewButton\" type=\"button\" onclick=\"sliceView()\">Slice View</button>\n                                        </div>\n                                        <div class=\"col-md-6\" align=\"center\" style=\"padding-top:10px;padding-bottom:10px;\">\n                                            <button class=\"btn jumbotron-button btn-block big-text\" id=\"sliceViewButton\" type=\"button\" onclick=\"topView()\">Top View</button>\n                                        </div>\n                                    </div>\n                                    <div class=\"row\"> \n                                        <div class=\"col-md-3\"  align=\"left\">\n                                            <span class=\"big-text\">Time</span>\n                                        </div>\n                                        <div class=\"col-md-9\">\n                                            <span class=\"big-text\" id=\"stopTime\"></span>\n                                        </div>\n                                    </div>\n                                    <div class=\"row\"> \n                                        <div class=\"col-md-8\" align=\"left\" >\n                                            <span class=\"big-text\">Max. Mode Freq.</span>\n                                        </div>\n                                        <div class=\"col-md-4\">\n                                            <span class=\"big-text\" id=\"maxMode\"></span>\n                                        </div>\n                                    </div>\n                                    <div class=\"row\"> \n                                         <div class=\"col-md-8\" align=\"left\" >\n                                            <span class=\"big-text\">Max. Mode Amp.</span>\n                                        </div>\n                                        <div class=\"col-md-4\">\n                                            <span class=\"big-text\" id=\"maxModeAmplitude\"></span>\n                                        </div>\n                                    </div>\n                                </div>\n                            </div>\n                        </div>\n                    </div>\n                </div>\n",
         "output": "str",
-        "x": 830,
-        "y": 1060,
+        "x": 990,
+        "y": 1120,
         "wires": [
             [
                 "dd553955.edf6c8"
@@ -1342,8 +1326,8 @@
         "type": "subflow:27d784cd.64e56c",
         "z": "758e0e20.2b99f",
         "name": "",
-        "x": 1110,
-        "y": 1180,
+        "x": 1270,
+        "y": 1240,
         "wires": []
     },
     {
@@ -1374,10 +1358,10 @@
         "fieldType": "msg",
         "format": "html",
         "syntax": "mustache",
-        "template": "                <div class='card'>\n                    <div class='row'>\n                        <div class='col-md-2'>\n                        </div>\n                        <div class='col-md-8'>\n                            <p class='card-title'>UltraSound Amplitude</p>\n                         </div>\n                        <div class='col-md-2'>\n                        </div>\n                    </div>\n                    <div class='card-body' align=\"center\">\n                        <div class='row'>\n                            <div class='col-md-12'>\n                                <div id=\"ultraAmpBarPlot\" width=\"100%\" ></div>\n                           </div>\n                        </div>\n                    </div>\n                </div>\n",
+        "template": "                <div class='card'>\n                    <div class='row'>\n                        <div class='col-md-2'>\n                        </div>\n                        <div class='col-md-8'>\n                            <p class='card-title'>UltraSound Amplitude</p>\n                         </div>\n                        <div class='col-md-2'>\n                            <button class='btn btn-block card-button big-text' id=\"ultraAmpButton\" onclick=\"editDevice('ultraAmp')\" >Edit</button>\n                        </div>\n                    </div>\n                    <div class='card-body' align=\"center\">\n                        <div class='row'>\n                            <div class='col-md-12'>\n                                <div id=\"ultraAmpBarPlot\" width=\"100%\" ></div>\n                           </div>\n                        </div>\n                    </div>\n                </div>\n                <div id=\"editDeviceDialog\" title=\"Edit Device\" class='card'>\n                    <p class='card-title' id='editDeviceDialogAttribute'>Attribute</p>\n                    <div class='card-body'>\n                        <table>\n                            <tr>\n                                <td width=\"70%\" align=\"left\">  <span class=\"tableHeading tableText\">LoLo</span></td>\n                                <td width=\"30%\" align=\"right\"><input class=\"form-control tableText\" id=\"loloAlarm\" type=\"text\" value=\"0\" /></td>\n                            </tr>\n                            <tr>\n                                <td width=\"70%\" align=\"left\">  <span class=\"tableHeading tableText\">LOW</span></td>\n                                <td width=\"30%\" align=\"right\"><input class=\"form-control tableText\" id=\"lowAlarm\" type=\"text\" value=\"0\" /></td>\n                            </tr>\n                            <tr>\n                                <td width=\"70%\" align=\"left\">  <span class=\"tableHeading tableText\">HIGH</span></td>\n                                <td width=\"30%\" align=\"right\"><input class=\"form-control tableText\" id=\"highAlarm\" type=\"text\" value=\"0\" /></td>\n                            </tr>\n                            <tr>\n                                <td width=\"70%\" align=\"left\">  <span class=\"tableHeading tableText\">HiHi</span></td>\n                                <td width=\"30%\" align=\"right\"><input class=\"form-control tableText\" id=\"hihiAlarm\" type=\"text\" value=\"0\" /></td>\n                            </tr>\n                            <tr>\n                                <td width=\"70%\" align=\"left\">  <span class=\"tableHeading tableText\">Notify Name</span></td>\n                                <td width=\"30%\" align=\"right\"><input class=\"form-control tableText\" id=\"notifyName\" type=\"text\" value=\"\" /></td>\n                            </tr>\n                            <tr>\n                                <td width=\"70%\" align=\"left\">  <span class=\"tableHeading tableText\">Notify Number</span></td>\n                                <td width=\"30%\" align=\"right\"><input class=\"form-control tableText\" id=\"notifyNumber\" type=\"text\" value=\"\" /></td>\n                            </tr>\n                        </table>\n                    </div>\n                </div>",
         "output": "str",
-        "x": 830,
-        "y": 1100,
+        "x": 990,
+        "y": 1160,
         "wires": [
             [
                 "70c1071a.bf72b8"
@@ -1395,8 +1379,8 @@
         "syntax": "mustache",
         "template": "<!-- Dashboard HTML -->\n                <div class='card'>\n                    <p class='card-title'>WiFi Connection</p>\n                    <div class='card-body' align=\"center\">\n                        <div class='row'  style='padding-top: 0px;'>\n                            <table width='100%'>\n                                <tr>\n                                    <td width='60%' >\n                                        <span class='card-text' >Device Update</span>\n                                    </td>\n                                    <td width='20%' align='center'></td>\n                                    <td width='20%' align='center'>\n                                        <img src='/img/heartRed.png' id='heartBeatID' width='100px' height='100px'/>\n                                    </td>\n                                </tr>\n                                <tr>\n                                    <td width='60%' >\n                                        <span class='card-text' >Signal Level (dBm)</span>\n                                    </td>\n                                    <td width='20%' align='center'></td>\n                                    <td width='20%' align='center'>\n                                        <span class='card-text' id='signalLevelId' >-100</span>\n                                    </td>\n                                </tr>\n                                <tr>\n                                    <td width='60%' >\n                                        <span class='card-text' >Link Quality (/70)</span>\n                                    </td>\n                                    <td width='20%' align='center'></td>\n                                    <td width='20%' align='center'>\n                                        <span class='card-text' id='linkQualityId' >-1</span>\n                                    </td>\n                                </tr>\n                            </table>\n                        </div>\n                    </div>\n                </div>\n",
         "output": "str",
-        "x": 810,
-        "y": 1180,
+        "x": 970,
+        "y": 1240,
         "wires": [
             [
                 "91e42328.9b264"
@@ -1414,8 +1398,8 @@
         "syntax": "mustache",
         "template": "                <div class='card'>\n                    <div class='row'>\n                        <div class='col-md-2'>\n                        </div>\n                        <div class='col-md-8'>\n                            <p class='card-title'>Settings</p>\n                         </div>\n                        <div class='col-md-2'>\n                        </div>\n                    </div>\n                    <div class='card-body' align=\"center\">\n                        <div class='row'>\n                            <table width='100%'>\n                                <tr>\n                                    <td width='60%'>\n                                        <span class='card-text' id='averagesLabel'>Averages</span>\n                                    </td>\n                                    <td width='20%'>\n                                        <input id=\"averages\" type=\"text\" value=\"0\" class=\"big-text\"  size=\"8\" oninput=\"averagesChange()\"/>\n                                    </td>\n                                    <td width='20%'>\n                                        <button class='btn btn-block card-button big-text' id=\"averagesButton\" onclick=\"averages()\" >&#10003;</button>\n                                    </td>\n                                </tr>\n                                <tr>\n                                    <td width='60%'>\n                                        <span class='card-text' id='regTempLabel'>Sample Interval (uS)</span>\n                                    </td>\n                                    <td width='20%'>\n                                        <input id=\"sampleInterval\" type=\"text\" value=\"0\" class=\"big-text\"   size=\"8\" oninput=\"sampleIntervalChange()\"/>\n                                    </td>\n                                    <td width='20%'>\n                                        <button class='btn card-button btn-block big-text' id=\"sampleIntervalButton\" onclick=\"sampleInterval()\" >&#10003;</button>\n                                    </td>\n                                </tr>\n                                <tr>\n                                    <td width='60%'>\n                                        <span class='card-text' id='regWindowLabel'>Min. Freq. (Hz)</span>\n                                    </td>\n                                    <td width='20%'>\n                                        <input id=\"minFreq\" type=\"text\" value=\"0\" class=\"big-text\"   size=\"8\" oninput=\"minFreqChange()\"/>\n                                    </td>\n                                    <td width='20%'>\n                                        <button class='btn card-button btn-block big-text' id=\"minFreqButton\" onclick=\"minFreq()\" >&#10003;</button>\n                                    </td>\n                                </tr>\n                                <tr>\n                                    <td width='60%'>\n                                        <span class='card-text' id='regWindowLabel'>Max. Freq. (Hz)</span>\n                                    </td>\n                                    <td width='20%'>\n                                        <input id=\"maxFreq\" type=\"text\" value=\"0\" class=\"big-text\"   size=\"8\" oninput=\"maxFreqChange()\"/>\n                                    </td>\n                                    <td width='20%'>\n                                        <button class='btn card-button btn-block big-text' id=\"maxFreqButton\" onclick=\"maxFreq()\" >&#10003;</button>\n                                    </td>\n                                </tr>\n                            </table>\n                        </div>\n                    </div>\n                </div>\n",
         "output": "str",
-        "x": 810,
-        "y": 1140,
+        "x": 970,
+        "y": 1200,
         "wires": [
             [
                 "208c5949.cb08f6"
@@ -1435,6 +1419,41 @@
         "wires": [
             [
                 "fc54618d.5781f"
+            ]
+        ]
+    },
+    {
+        "id": "3b89af4b.e86f4",
+        "type": "function",
+        "z": "758e0e20.2b99f",
+        "name": "Settings Alarm Scan",
+        "func": "scalarAlarmScan(msg.payload, 'setting');\nflow.set('device', msg.payload); \nreturn msg;\n\nfunction getActionArray(device, type, actionType)\n{\n    var actionArray = [];\n    var keys = Object.keys(device);\n    for (var ii = 0; ii < keys.length; ++ii)\n    {\n        if (device[keys[ii]].hasOwnProperty('type'))\n        {\n            if (device[keys[ii]].type == type)\n            {\n                if (device[keys[ii]].action == actionType)\n                {\n                    actionArray.push(device[keys[ii]]);\n                }\n            }\n        }\n    }\n    return actionArray;\n}\nfunction scalarAlarmScan(device, actionType)\n{\n    var actionArray = getActionArray(device, 'scalar', actionType);\n    if (actionArray.length > 0)\n    {\n        for (var ii = 0; ii < actionArray.length; ++ii)\n        {\n            actionArray[ii].alarm.value = 0;\n            if (!isNaN(actionArray[ii].value))\n            {\n                if (actionArray[ii].value < actionArray[ii].alarm.limits.low)  actionArray[ii].alarm.value = 1;\n                if (actionArray[ii].value < actionArray[ii].alarm.limits.lolo) actionArray[ii].alarm.value = 3;\n                if (actionArray[ii].value > actionArray[ii].alarm.limits.high) actionArray[ii].alarm.value = 2;\n                if (actionArray[ii].value > actionArray[ii].alarm.limits.hihi) actionArray[ii].alarm.value = 4;\n            }\n        }\n    }\n}\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 480,
+        "y": 40,
+        "wires": [
+            [
+                "f98d91f7.09114"
+            ]
+        ]
+    },
+    {
+        "id": "c78fbfbb.7037",
+        "type": "template",
+        "z": "758e0e20.2b99f",
+        "name": "script.editDevice",
+        "field": "payload.script.editDevice",
+        "fieldType": "msg",
+        "format": "javascript",
+        "syntax": "mustache",
+        "template": "// Edit Temp JavaScript\n       $( function() \n        {\n            $( \"#editDeviceDialog\" ).dialog(\n                {\n//                    closeOnEscape: false,\n//                    open: function(event, ui) {$(\".ui-dialog-titlebar-close\", ui.dialog | ui).hide();},\n                    width:    640,\n                    autoOpen: false,\n                    buttons:\n                    [\n                        {\n                            text: \"Set\",\n                            click: function() {setDevice(); $( this ).dialog( \"close\" );},\n                            showText: false\n                        },\n                        {\n                            text: \"Cancel\",\n                            click: function() \n                            {\n                                $( this ).dialog( \"close\" ); \n                            },\n                            showText: false\n                        }\n                    ]\n                });\n        } );\n        function editDevice(attrName)\n        {\n            $( \"#editDeviceDialog\" ).dialog( \"option\", \"title\", \"Edit\"); \n            editedAttribute = attrName;\n            $( \"#editDeviceDialogAttribute\").html(attrName);\n\n            var attr = device[attrName];\n            $( \"#loloAlarm\").val(attr.alarm.limits.lolo);\n            $( \"#lowAlarm\").val(attr.alarm.limits.low);\n            $( \"#highAlarm\").val(attr.alarm.limits.high);\n            $( \"#hihiAlarm\").val(attr.alarm.limits.hihi);\n            $( \"#notifyName\").val(attr.alarm.notify.name);\n            $( \"#notifyNumber\").val(attr.alarm.notify.number);\n\n            $( \"#editDeviceDialog\" ).dialog( \"open\" );\n        }\n        function setDevice()\n        {\n            var attr = device[editedAttribute];\n            if (isNaN($('#loloAlarm').val()) \n                || isNaN($('#lowAlarm').val()) \n                || isNaN($('#highAlarm').val()) \n                || isNaN($('#hihiAlarm').val()))\n            {\n                acknowledgeDialog('Error', 'Entry not a number!', editedAttribute);\n                editedAttribute = '';\n                return;\n            }\n            editedAttribute = '';\n\n            attr.alarm.limits.lolo = Number($( \"#loloAlarm\").val());\n            attr.alarm.limits.low = Number($( \"#lowAlarm\").val());\n            attr.alarm.limits.high = Number($( \"#highAlarm\").val());\n            attr.alarm.limits.hihi = Number($( \"#hihiAlarm\").val());\n            attr.alarm.notify.number =  $( \"#notifyNumber\").val();\n            attr.alarm.notify.name = $( \"#notifyName\").val();\n            var mqttMessage = \n            {\n                topic   : mqttDevice.project + '/' +  mqttDevice.deviceType + '/' +  mqttDevice.name + '/setting',\n                payload :  device\n            };\n            checkLogin(sendSettingToMqtt, mqttMessage);\n        }\n",
+        "output": "str",
+        "x": 660,
+        "y": 1060,
+        "wires": [
+            [
+                "4f1f8295.e094cc"
             ]
         ]
     }
